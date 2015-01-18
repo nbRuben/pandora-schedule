@@ -32,9 +32,17 @@ public class Schedule {
 		this.teachers = teachers;
 		this.groups = groups;
 	}
+	public Schedule (int id,String subject, String days, String time, String teachers, String groups){
+		super();
+		this.id = id;
+		this.subject = subject;
+		this.days = days;
+		this.time = time;
+		this.teachers = teachers;
+		this.groups = groups;
+	}
 	
 	@Id
-	@GeneratedValue(strategy = IDENTITY)
 	@Column(name = "id", unique = true, nullable = false)
 	public int getId() {
 		return id;

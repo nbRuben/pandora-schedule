@@ -1,6 +1,8 @@
 package edu.upc.eetac.ea.group1.PandoraSchedule.api;
 
 
+import java.util.List;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -23,6 +25,15 @@ public class ScheduleResource {
     public Scheduledb getSchedule(@PathParam("id") int id ) {	
     	 
     	Scheduledb s = dbo.getSchedule(id);
+        return s;
+        
+    }
+	
+	@GET
+    @Path ("/schedules/{ids}")
+    public List<Scheduledb> getSchedules(@PathParam("ids") String arrayIDs) {	
+    	 
+    	List<Scheduledb> s = dbo.getSchedules(arrayIDs);
         return s;
         
     }

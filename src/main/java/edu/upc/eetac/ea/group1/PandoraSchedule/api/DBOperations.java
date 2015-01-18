@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.security.auth.Subject;
 import javax.ws.rs.NotFoundException;
 
 import org.hibernate.SQLQuery;
@@ -36,6 +37,7 @@ public class DBOperations implements Manager, Serializable {
 		super();
 		config = new AnnotationConfiguration();
 		config.addAnnotatedClass(Schedule.class);
+		config.addAnnotatedClass(Subject.class);
 		config.configure();
 		factory = config.buildSessionFactory();
 
@@ -67,24 +69,36 @@ public class DBOperations implements Manager, Serializable {
 			Iterator<String> it;
 			List<String> groupsSplitted = Arrays.asList(groups.split("&"));
 			it = groupsSplitted.iterator();
-			int i = 0;
+			int i=0;
 			List<Group> groupsSubject = new ArrayList<Group>();
-			List<Day> dayGroup = new ArrayList<Day>();
+			
 			while(it.hasNext()){
+
 				Group g = new Group();
-				Day d = new Day();
+				
 				g.setGroup(it.next());
+				
+				//Cogemos los días de un grupo
 				List<String> daysSplitted = Arrays.asList(days.split("&"));
+				//Cogemos un día específico
 				List<String> daysSplitted2 = Arrays.asList(daysSplitted.get(i).split(","));
-				d.setDay(daysSplitted2.get(i));
+				//Cogemos las horas de un grupo
+				List<String> timeSplitted = Arrays.asList(time.split("&"));
+				//Cogemos las horas de un día específico
+				List<String> timeSplitted2 = Arrays.asList(timeSplitted.get(i).split(","));
+
+				//Creamos una lista de objetos Day, para luego añadirla al grupo de la asignatura.
+				List<Day> dayGroup = new ArrayList<Day>();
+				for(int j = 0; j<daysSplitted2.size();j++){
+					Day d = new Day();
+					d.setDay(daysSplitted2.get(j));
+					d.setTime(timeSplitted2.get(j));
+					dayGroup.add(d);
+					g.setDays(dayGroup);
+				}
 				//g.setDays(Arrays.asList(daysSplitted.get(i).split(",")));
 				List<String> teachersSplitted = Arrays.asList(teachers.split("&"));
-				g.setTeacher(teachersSplitted.get(i));
-				List<String> timeSplitted = Arrays.asList(time.split("&"));
-				List<String> timeSplitted2 = Arrays.asList(timeSplitted.get(i).split(","));
-				d.setTime(timeSplitted2.get(i));
-				dayGroup.add(d);
-				g.setDays(dayGroup);
+				g.setTeacher(teachersSplitted.get(i));				
 				//g.setTime(Arrays.asList(timeSplitted.get(i).split(",")));
 				groupsSubject.add(g);
 				i++;
@@ -97,6 +111,21 @@ public class DBOperations implements Manager, Serializable {
 			s.setGroups(groupsSubject);
 
 		}
+		return s;
+	}
+	
+	@Override
+	public List<Scheduledb> getSchedules(String arrayIDs) {
+		List<Scheduledb> s = new ArrayList<Scheduledb>();
+		SessionFactory factory = config.buildSessionFactory();
+		Session session = factory.getCurrentSession();
+		session.beginTransaction();
+		List<String> idSplitted = Arrays.asList(arrayIDs.split(","));
+		for(int i = 0; i<idSplitted.size();i++){
+			Scheduledb schedule = getSchedule(Integer.parseInt(idSplitted.get(i)));
+			s.add(schedule);
+		}
+		session.getTransaction().commit();
 		return s;
 	}
 
@@ -116,6 +145,7 @@ public class DBOperations implements Manager, Serializable {
 		}
 		
 	}
+	
 
 	@Override
 	public int updateSchedule(int id, Schedule schedule) {
@@ -172,5 +202,7 @@ public class DBOperations implements Manager, Serializable {
 		}
 		 
 	}
+
+
 
 }
